@@ -17,6 +17,23 @@ def add_task(name):
     cursor.close()
     conn.close()
 
+def delete_task(id):
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM tasks WHERE id = %s", (id ,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def change_status_tasks(status, id):
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE tasks set done = %s where id=%s", (status, id ))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
 def get_tasks():
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor(dictionary=True)

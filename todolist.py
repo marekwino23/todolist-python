@@ -22,8 +22,20 @@ def add_tasks():
     db.add_task(name)
     return jsonify({"message": "success"}), 201
 
+@app.route("/delete_tasks", methods=["POST"])
+def delete_tasks():
+        data = request.get_json()
+        id = data.get("id")
+        db.delete_task(id)
+        return jsonify({"message": "success"}), 200
 
-    
+@app.route("/change_status", methods=["PATCH"])
+def change_status_tasks():
+    data = request.get_json()
+    task_id = data.get("id")
+    status = data.get("status")
+    db.change_status_tasks(status, task_id)
+    return jsonify({"message": "success"}), 200
 
 
 if __name__ == "__main__":
