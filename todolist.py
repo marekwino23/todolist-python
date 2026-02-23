@@ -29,7 +29,6 @@ class TaskResponse(BaseModel):
 
 class TaskUpdateStatusRequest(BaseModel):
     id: int
-    name: str
     done: bool    
 
 @app.get("/")
@@ -43,8 +42,13 @@ def get_tasks():
 
 @app.post("/tasks", status_code= status.HTTP_201_CREATED)
 def add_tasks(task: TaskRequest):
-    db.add_task(task.dict())
-    return ({"message": "success"}), 201
+   new_id = db.add_task(task.name)  # np. INSERT + RETURN LAST_INSERT_ID()
+   new_task = {
+            "id": new_id,
+            "name": task.name,
+            "done": False  # nowy task zawsze na start 'niezrobiony'
+    }
+   return new_task
 
 @app.delete("/delete_tasks", status_code= status.HTTP_200_OK)
 def delete_tasks(task: TaskDeleteRequest):
@@ -55,7 +59,6 @@ def delete_tasks(task: TaskDeleteRequest):
 def change_status_tasks(task: TaskUpdateStatusRequest):
     db.change_status_tasks(task.done, task.id)
     return {"message": "success"}
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)

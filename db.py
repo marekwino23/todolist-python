@@ -16,6 +16,7 @@ def add_task(name: str):
         with conn.cursor() as cursor:
             cursor.execute("INSERT INTO tasks (name) VALUES (%s)", (name,))
         conn.commit()
+        return cursor.lastrowid
 
 def delete_task(id: int):
     with get_connection() as conn:
