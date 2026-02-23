@@ -1,41 +1,60 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import db  # import modułu db.py
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from typing import List
+import db
+from pydantic import BaseModel
+from fastapi import status
 
-app = Flask(__name__)
-CORS(app)  # pozwala na requesty z innych portów/domains
+app = FastAPI()
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class TaskRequest(BaseModel):
+    name: str
+
+class TaskDeleteRequest(BaseModel):
+    id: int    
+
+class TaskResponse(BaseModel):
+    id: int
+    name: str
+    status: bool
+
+class TaskUpdateStatusRequest(BaseModel):
+    id: int
+    name: str
+    status: bool    
 
 @app.route("/")
 def home():
     return "<h1>TODO App</h1><p>Użyj /tasks aby zobaczyć zadania</p>"
 
-@app.route("/tasks", methods=["GET"])
+@app.get("/tasks", response_model=List[TaskResponse], status_code = status.HTTP_200_OK)
 def get_tasks():
     tasks = db.get_tasks()  # pobiera listę z db.py
-    return jsonify(tasks)    # jsonify robimy dopiero w Flask
+    return tasks   # jsonify robimy dopiero w Flask
 
-@app.route("/tasks", methods=["POST"])
-def add_tasks():
-    data = request.get_json()
-    print(data, "data") 
-    name = data.get("name")
-    db.add_task(name)
-    return jsonify({"message": "success"}), 201
+@app.post("/tasks", status_code= status.HTTP_201_CREATED)
+def add_tasks(task: TaskRequest):
+    db.add_task(task.dict())
+    return ({"message": "success"}), 201
 
-@app.route("/delete_tasks", methods=["POST"])
-def delete_tasks():
-        data = request.get_json()
-        id = data.get("id")
-        db.delete_task(id)
-        return jsonify({"message": "success"}), 200
+@app.delete("/delete_tasks", status_code= status.HTTP_200_OK)
+def delete_tasks(task: TaskDeleteRequest):
+        db.delete_task(task.id)
+        return {"message": "success"}
 
-@app.route("/change_status", methods=["PATCH"])
-def change_status_tasks():
-    data = request.get_json()
-    task_id = data.get("id")
-    status = data.get("status")
-    db.change_status_tasks(status, task_id)
-    return jsonify({"message": "success"}), 200
+@app.patch("/change_status", status_code= status.HTTP_200_OK)
+def change_status_tasks(task: TaskUpdateStatusRequest):
+    db.change_status_tasks(task.status, task.id)
+    return {"message": "success"}
 
 
 if __name__ == "__main__":

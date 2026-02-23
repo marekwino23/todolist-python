@@ -8,37 +8,31 @@ db_config = {
     "database": "vidad_todolist"
 }
 
-def add_task(name):
-    conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor()
-    sql = "INSERT INTO tasks (name) VALUES (%s)"
-    cursor.execute(sql, (name, ))
-    conn.commit()
-    cursor.close()
-    conn.close()
+def get_connection():
+    return mysql.connector.connect(**db_config)
 
-def delete_task(id):
-    conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM tasks WHERE id = %s", (id ,))
-    conn.commit()
-    cursor.close()
-    conn.close()
+def add_task(name: str):
+     with get_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("INSERT INTO tasks (name) VALUES (%s)", (name,))
+        conn.commit()
 
-def change_status_tasks(status, id):
-    conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor()
-    cursor.execute("UPDATE tasks set done = %s where id=%s", (status, id ))
-    conn.commit()
-    cursor.close()
-    conn.close()
+def delete_task(id: int):
+    with get_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("DELETE FROM tasks where id=%s", (id, ))
+        conn.commit()
 
+def change_status_tasks(status: int, id: int):
+   with get_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("UPDATE tasks set done = %s where id=%s", (status, id ))
+        conn.commit()
 
 def get_tasks():
-    conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM tasks")
-    tasks = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return tasks
+     with get_connection() as conn:
+        with conn.cursor(dictionary=True) as cursor:
+            cursor.execute("SELECT * FROM tasks")
+            tasks = cursor.fetchall()
+        conn.commit()
+        return tasks
