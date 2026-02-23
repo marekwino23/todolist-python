@@ -25,14 +25,14 @@ class TaskDeleteRequest(BaseModel):
 class TaskResponse(BaseModel):
     id: int
     name: str
-    status: bool
+    done: bool
 
 class TaskUpdateStatusRequest(BaseModel):
     id: int
     name: str
-    status: bool    
+    done: bool    
 
-@app.route("/")
+@app.get("/")
 def home():
     return "<h1>TODO App</h1><p>Użyj /tasks aby zobaczyć zadania</p>"
 
@@ -53,7 +53,7 @@ def delete_tasks(task: TaskDeleteRequest):
 
 @app.patch("/change_status", status_code= status.HTTP_200_OK)
 def change_status_tasks(task: TaskUpdateStatusRequest):
-    db.change_status_tasks(task.status, task.id)
+    db.change_status_tasks(task.done, task.id)
     return {"message": "success"}
 
 
